@@ -1,3 +1,4 @@
+import React from "react";
 function Square(props) {
   return (
     <button className={props.styleSquare} onClick={props.onClick}>
