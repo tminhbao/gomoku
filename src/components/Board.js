@@ -1,64 +1,34 @@
 import React from "react";
 import Square from "./Square";
 class Board extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      squares: Array(9).fill(null),
-      xIsNext: true,
-    };
-  }
-
-  handleClick(i) {
-    const squares = this.state.squares.slice();
-    if (calculateWinner(squares) || squares[i]) {
-      return;
-    }
-    squares[i] = this.state.xIsNext ? "X" : "O";
-    this.setState({
-      squares: squares,
-      xIsNext: !this.state.xIsNext,
-    });
-  }
-
   renderSquare(i) {
     return (
       <Square
         value={this.props.squares[i]}
         onClick={() => this.props.onClick(i)}
+        styleSquare={this.props.styleSquare[i]}
       />
     );
   }
-
+  // Two loops to create the board! Took so long to do this so don't forget it!!!
   render() {
-    const winner = calculateWinner(this.state.squares);
-    let status;
-    if (winner) {
-      status = "Winner: " + winner;
-    } else {
-      status = "Next player: " + (this.state.xIsNext ? "X" : "O");
-    }
+    const index = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+    ];
+    const rows = index.map((i) => {
+      var cells = i.map((j) => {
+        return <label key={j.toString()}>{this.renderSquare(j)}</label>;
+      });
+      return (
+        <div key={i.toString()} className="board-row">
+          {cells}
+        </div>
+      );
+    });
 
-    return (
-      <div>
-        <div className="status">{status}</div>
-        <div className="board-row">
-          {this.renderSquare(0)}
-          {this.renderSquare(1)}
-          {this.renderSquare(2)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(3)}
-          {this.renderSquare(4)}
-          {this.renderSquare(5)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(6)}
-          {this.renderSquare(7)}
-          {this.renderSquare(8)}
-        </div>
-      </div>
-    );
+    return <div>{rows}</div>;
   }
 }
 
@@ -76,7 +46,7 @@ function calculateWinner(squares) {
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      return [a, b, c];
     }
   }
   return null;
