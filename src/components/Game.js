@@ -1,154 +1,151 @@
-import React from "react";
+import React, { useState } from "react";
 import Square from "./Square";
 import Board from "./Board";
-class Game extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      history: [
-        {
-          squares: Array(25).fill(null),
-          lastMove: null,
-        },
-      ],
-      stepNumber: 0,
-      xIsNext: true,
-      styleSquare: Array(25).fill("square"),
-      ascend: false,
-    };
-    this.toggle = this.toggle.bind(this);
-  }
+import { render } from "@testing-library/react";
+function Game() {
+  const [history, setHistory] = useState([
+    {
+      squares: Array(25).fill(null),
+      lastMove: null,
+    },
+  ]);
+  const [stepNumber, setStepNumber] = useState(0);
+  const [xIsNext, setXIsNext] = useState(true);
+  const [styleSquare, setStyleSquare] = useState(() =>
+    Array(25).fill("square")
+  );
+  const [isAscend, setIsAscend] = useState(false);
 
-  handleClick(i) {
-    var history = this.state.history.slice(0, this.state.stepNumber + 1);
+  function handleClick(i) {
+    setHistory(() => history.slice(0, stepNumber + 1));
     const current = history[history.length - 1];
     const squares = current.squares.slice();
-    var styleSquare = this.state.styleSquare.slice();
+    setStyleSquare(() => styleSquare.slice());
     const lastMove = [i % 5, Math.floor(i / 5)];
 
     if (calculateWinner(squares) || squares[i]) {
       return;
     }
-    squares[i] = this.state.xIsNext ? "X" : "O";
+    if (xIsNext) {
+      squares[i] = "X";
+    } else {
+      squares[i] = "O";
+    }
+    console.log(squares[i]);
+
     const winner = calculateWinner(squares);
 
-    this.setState({
-      history: (history = history.concat([
+    setHistory(() =>
+      history.concat([
         {
           squares: squares,
           lastMove: lastMove,
         },
-      ])),
-      stepNumber: history.length - 1,
-      xIsNext: !this.state.xIsNext,
-    });
+      ])
+    );
+
+    setStepNumber(() => history.length);
+    setXIsNext(!xIsNext);
 
     if (winner) {
-      this.onWin(winner, styleSquare);
+      onWin(winner, styleSquare);
     }
   }
 
-  onWin(winner, styleSquare) {
+  function onWin(winner, styleSquare) {
     styleSquare[winner[0]] = "win";
     styleSquare[winner[1]] = "win";
     styleSquare[winner[2]] = "win";
     styleSquare[winner[3]] = "win";
     styleSquare[winner[4]] = "win";
 
-    this.setState({
-      styleSquare: styleSquare,
-    });
+    setStyleSquare(styleSquare);
   }
 
-  jumpTo(step) {
-    var history = this.state.history.slice(0, step + 1);
+  function jumpTo(step) {
+    setHistory(() => history.slice(0, step + 1));
     const current = history[history.length - 1];
     const squares = current.squares.slice();
-    var styleSquare = this.state.styleSquare.slice();
+    setStyleSquare(() => styleSquare.slice());
     const winner = calculateWinner(squares);
 
-    this.setState({
-      stepNumber: step,
-      xIsNext: step % 2 === 0,
-    });
+    setStepNumber(step);
+    setXIsNext(step % 2 === 0);
 
     if (winner) {
-      this.onWin(winner, styleSquare);
+      onWin(winner, styleSquare);
     } else {
-      this.setState({
-        styleSquare: Array(25).fill("square"),
-      });
+      setStyleSquare(() => Array(25).fill("square"));
     }
   }
 
-  toggle() {
-    this.setState({
-      ascend: !this.state.ascend,
-    });
+  function handleToggle() {
+    setIsAscend(!isAscend);
   }
 
-  render() {
-    const history = this.state.history;
-    const current = history[this.state.stepNumber];
-    const winner = calculateWinner(current.squares);
+  const current = history[stepNumber];
+  const winner = calculateWinner(current.squares);
 
-    const toggle = this.state.ascend ? "Ascending" : "Descending";
+  if (isAscend) {
+    var toggle = "Ascending";
+  } else {
+    var toggle = "Descending";
+  }
 
-    const moves = history.map((step, move) => {
-      if (this.state.ascend) {
-        move = history.length - 1 - move; //Display descending
-      }
-
-      const desc = move
-        ? "Go to move #" +
-          move +
-          " at position (" +
-          history[move].lastMove.toString() +
-          ")"
-        : "Go to game start";
-      if (move == this.state.stepNumber) {
-        return (
-          <li key={move}>
-            <button onClick={() => this.jumpTo(move)}>
-              <b>{desc}</b>
-            </button>
-          </li>
-        );
-      } else {
-        return (
-          <li key={move}>
-            <button onClick={() => this.jumpTo(move)}>{desc}</button>
-          </li>
-        );
-      }
-    });
-
-    let status;
-    if (winner) {
-      status = "Winner: " + current.squares[winner[0]];
-    } else if (!current.squares.includes(null)) {
-      status = "Its a draw!";
-    } else {
-      status = "Next player: " + (this.state.xIsNext ? "X" : "O");
+  const moves = history.map((step, move) => {
+    if (isAscend) {
+      move = history.length - 1 - move; //Display descending
     }
 
-    return (
-      <div className="game">
-        <div className="game-board">
-          <Board
-            squares={current.squares}
-            onClick={(i) => this.handleClick(i)}
-            styleSquare={this.state.styleSquare}
-          />
-        </div>
-        <div className="game-info">
-          <div>{status}</div>
-          <button onClick={this.toggle}>{toggle}</button>
-          <ol>{moves}</ol>
-        </div>
+    const desc = move
+      ? "Go to move #" +
+        move +
+        " at position (" +
+        history[move].lastMove.toString() +
+        ")"
+      : "Go to game start";
+    if (move == stepNumber) {
+      return (
+        <li key={move}>
+          <button onClick={() => jumpTo(move)}>
+            <b>{desc}</b>
+          </button>
+        </li>
+      );
+    } else {
+      return (
+        <li key={move}>
+          <button onClick={() => jumpTo(move)}>{desc}</button>
+        </li>
+      );
+    }
+  });
+
+  var status;
+  if (winner) {
+    status = "Winner: " + current.squares[winner[0]];
+  } else if (!current.squares.includes(null)) {
+    status = "Its a draw!";
+  } else {
+    status = "Next player: " + (xIsNext ? "X" : "O");
+  }
+
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board
+          squares={current.squares}
+          onClick={(i) => handleClick(i)}
+          styleSquare={styleSquare}
+        />
       </div>
-    );
-  }
+      <div className="game-info">
+        <div>{status}</div>
+        <button onClick={handleToggle}>{toggle}</button>
+        <ol>{moves}</ol>
+      </div>
+    </div>
+  );
 }
 
 function calculateWinner(squares) {
