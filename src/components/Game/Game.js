@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import Square from "./Square";
-import Board from "./Board";
+import Square from "../Square/Square";
+import Board from "../Board/Board";
 import { render } from "@testing-library/react";
 function Game() {
   const [history, setHistory] = useState([

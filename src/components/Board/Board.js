@@ -1,5 +1,5 @@
 import React from "react";
-import Square from "./Square";
+import Square from "../Square/Square";
 function Board(props) {
   function renderSquare(i) {
     return (
